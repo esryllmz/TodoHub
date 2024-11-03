@@ -26,7 +26,7 @@ namespace TodoHub.DataAccess.Configurations
                 builder.Property(t => t.Description)
                     .HasMaxLength(500);
 
-                builder.Property(t => t.CreatedDate)
+                builder.Property(t => t.CreatedTime)
                     .HasDefaultValueSql("GETDATE()");
 
                 builder.Property(t => t.Priority)

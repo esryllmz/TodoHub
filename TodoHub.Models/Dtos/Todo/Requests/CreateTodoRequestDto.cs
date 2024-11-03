@@ -7,12 +7,13 @@ using TodoHub.Models.Entities;
 
 namespace TodoHub.Models.Dtos.Todo.Requests
 {
-    public sealed record CreateTodoRequestDto(string Title,
-    string Description,
-    DateTime StartDate,
-    DateTime EndDate,
-    Priority Priority,
-    int CategoryId,
-    string UserId);
+    public sealed record CreateTodoRequestDto(
+        string Title,
+        string Description,
+        DateTime StartDate,
+        DateTime EndDate,
+        Priority Priority,
+        int CategoryId,
+        string UserId);
    
 }

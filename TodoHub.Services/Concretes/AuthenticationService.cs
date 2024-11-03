@@ -20,14 +20,14 @@ namespace TodoHub.Services.Concretes
             _jwtService = jwtService;
         }
 
-        public async Task<TokenResponseDto> LoginByTokenAsync(LoginRequestDto dto)
+        public async Task<TokenResponseDto> LoginAsync(LoginRequestDto dto)
         {
             var loginResponse = await _userService.LoginAsync(dto);
             var tokenResponse = await _jwtService.CreateToken(loginResponse);
             return tokenResponse;
         }
 
-        public async Task<TokenResponseDto> RegisterByTokenAsync(RegisterRequestDto dto)
+        public async Task<TokenResponseDto> RegisterAsync(RegisterRequestDto dto)
         {
             var registerResponse = await _userService.CreateUserAsync(dto);
             var tokenResponse = await _jwtService.CreateToken(registerResponse);

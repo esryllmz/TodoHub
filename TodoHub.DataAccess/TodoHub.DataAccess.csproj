@@ -19,6 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\TodoHub.Core\TodoHub.Core.csproj" />
     <ProjectReference Include="..\TodoHub.Models\TodoHub.Models.csproj" />
   </ItemGroup>
 

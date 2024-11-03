@@ -8,6 +8,8 @@ using TodoHub.Models.Entities;
 
 namespace TodoHub.DataAccess.Abstracts;
 
-public interface ITodoRepository:IRepository<Todo, Guid>
+public interface ICategoryRepository : IRepository<Category, int>
 {
+
+    
 }

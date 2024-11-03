@@ -10,7 +10,9 @@ namespace TodoHub.Models.Entities;
 public class User : IdentityUser
 {
 
-    // Kullanıcının kendi görev listesi
+    string FirstName { get; set; }=string.Empty;
+    public string LastName { get; set; } = string.Empty;
+
     public List<Todo> Todos { get; set; } = new List<Todo>();
 }
 

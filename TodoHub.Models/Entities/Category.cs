@@ -11,7 +11,7 @@ public class Category:Entity<int>
     
     public string Name { get; set; }
 
-    // Navigation Property
+    
     public List<Todo> ToDos { get; set; }
 }
 

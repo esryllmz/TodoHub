@@ -14,11 +14,10 @@ namespace TodoHub.Models.Dtos.Todo.Responses
         public string Description { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
-        public DateTime CreatedDate { get; set; }
         public Priority Priority { get; set; }
         public bool Completed { get; set; }
-        public string CategoryName { get; set; } // Kategori adı
-        public string UserName { get; set; } // Kullanıcı adı
+        public string CategoryName { get; set; } 
+        public string UserName { get; set; } 
     }
    
 }

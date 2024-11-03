@@ -31,7 +31,7 @@ namespace TodoHub.Services.Concretes
         {
             Todo createdTodo = _mapper.Map<Todo>(dto);
             createdTodo.Id = Guid.NewGuid();
-            createdTodo.UserId = userId; // Kullanıcı ID'si
+            createdTodo.UserId = userId; 
 
             Todo todo = _todoRepository.Add(createdTodo);
 
@@ -41,7 +41,7 @@ namespace TodoHub.Services.Concretes
             {
                 Data = response,
                 Message = "Todo eklendi.",
-                Status = 200,
+                StatusCode = 200,
                 Success = true
             };
         }
@@ -57,7 +57,7 @@ namespace TodoHub.Services.Concretes
             {
                 Data = $"Todo Başlığı : {deletedTodo.Title}",
                 Message = "Todo başarıyla silindi.",
-                Status = 204,
+                StatusCode = 204,
                 Success = true
             };
         }
@@ -70,7 +70,7 @@ namespace TodoHub.Services.Concretes
             {
                 Data = responses,
                 Message = string.Empty,
-                Status = 200,
+                StatusCode = 200,
                 Success = true
             };
         }
@@ -84,7 +84,7 @@ namespace TodoHub.Services.Concretes
             {
                 Data = responses,
                 Message = $"Kullanıcıya göre Todo'lar listelendi : Kullanıcı ID: {userId}",
-                Status = 200,
+                StatusCode = 200,
                 Success = true
             };
         }
@@ -97,7 +97,7 @@ namespace TodoHub.Services.Concretes
             {
                 Data = responses,
                 Message = $"Kategori ID'sine göre Todo'lar listelendi : Kategori ID: {categoryId}",
-                Status = 200,
+                StatusCode = 200,
                 Success = true
             };
         }
@@ -110,7 +110,7 @@ namespace TodoHub.Services.Concretes
             {
                 Data = responses,
                 Message = string.Empty,
-                Status = 200,
+                StatusCode = 200,
                 Success = true
             };
         }
@@ -127,13 +127,13 @@ namespace TodoHub.Services.Concretes
                 {
                     Data = response,
                     Message = "İlgili todo gösterildi",
-                    Status = 200,
+                    StatusCode = 200,
                     Success = true
                 };
             }
             catch (Exception ex)
             {
-                return ExceptionHandler<TodoResponseDto>.HandleException(ex);
+                return GlobalExceptionHandler<TodoResponseDto>.HandleException(ex);
             }
         }
 
@@ -158,7 +158,7 @@ namespace TodoHub.Services.Concretes
             {
                 Data = response,
                 Message = "Todo güncellendi.",
-                Status = 200,
+                StatusCode = 200,
                 Success = true
             };
         }

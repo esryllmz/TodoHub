@@ -16,6 +16,15 @@ namespace TodoHub.Services.Constants
         {
             return $"İlgili ID'ye göre todo bulunamadı: {id}.";
         }
+        public const string CategoryAddedMessage = "kategori Eklendi.";
+        public const string CategoryUpdatedMessage = "kategori Güncellendi.";
+        public const string CategoryDeletedMessage = "kategori Silindi.";
+
+
+        public static string CategoryIsNotPresentMessage(int id)
+        {
+            return $"İlgili ID'ye göre kategori bulunamadı: {id}.";
+        }
     }
 
 }

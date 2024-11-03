@@ -9,10 +9,9 @@ using TodoHub.Models.Dtos.Todo.Responses;
 using TodoHub.Models.Dtos.Tokens;
 using TodoHub.Models.Entities;
 
-namespace TodoHub.Services.Abstracts
+namespace TodoHub.Services.Abstracts;
+
+public interface IJwtService
 {
-    public interface IJwtService
-    {
-        Task<TokenResponseDto> CreateToken(User user);
-    }
+    Task<TokenResponseDto> CreateToken(User user);
 }

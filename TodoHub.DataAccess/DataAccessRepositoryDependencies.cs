@@ -18,6 +18,7 @@ namespace TodoHub.DataAccess
         public static IServiceCollection AddRepositoryDepencdencies(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddScoped<ITodoRepository, EfTodoRepository>();
+            services.AddScoped<ICategoryRepository,EfCategoryRepository>();
             services.AddDbContext<BaseDbContext>(opt => opt.UseSqlServer(configuration.GetConnectionString("SqlConnection")));
             return services;
         }
