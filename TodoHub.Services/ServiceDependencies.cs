@@ -38,11 +38,7 @@ namespace TodoHub.Services
             services.AddFluentValidationAutoValidation();
             services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 
-            services.AddStackExchangeRedisCache(opt =>
-            {
-                opt.Configuration = "localhost:6379";
-                opt.InstanceName = "TodoHub";
-            });
+            
 
 
             return services;
