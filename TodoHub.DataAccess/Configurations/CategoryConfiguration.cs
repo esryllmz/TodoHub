@@ -9,26 +9,40 @@ using TodoHub.Models.Entities;
 
 namespace TodoHub.DataAccess.Configurations
 {
-   
+
     namespace TodoHub.DataAccess.Configurations
     {
         public class CategoryConfiguration : IEntityTypeConfiguration<Category>
         {
-           
+
 
             public void Configure(EntityTypeBuilder<Category> builder)
             {
-                builder.HasKey(c => c.Id);
+                builder.ToTable("Categories").HasKey(c => c.Id);
+                builder.Property(c => c.Id).HasColumnName("CategoryId");
+                builder.Property(c => c.CreatedTime).HasColumnName("CreatedTime");
+                builder.Property(c => c.UpdatedTime).HasColumnName("UpdatedTime");
+                builder.Property(c => c.Name).HasColumnName("CategoryName");
 
-                builder.Property(c => c.Name)
-                    .IsRequired()
-                    .HasMaxLength(50);
+                builder
+                  .HasMany(c => c.Todos)
+                  .WithOne(t => t.Category)
+                  .HasForeignKey(c => c.CategoryId)
+                  .OnDelete(DeleteBehavior.NoAction);
 
-                builder.HasMany(c => c.ToDos) // Category'den Todo'lara birden çok ilişki
-                    .WithOne(t => t.Category)
-                    .HasForeignKey(t => t.CategoryId);
+                builder.HasData(new Category()
+                {
+                    Id = 1,
+                    Name = "Yemek",
+                    CreatedTime = DateTime.Now
+                });
+
             }
+
+
+
         }
     }
+
 
 }

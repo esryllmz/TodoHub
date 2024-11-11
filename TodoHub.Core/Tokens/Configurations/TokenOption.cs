@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace TodoHub.Core.Tokens.Configurations
 {
-    public class CustomTokenOptions
+    public class TokenOption
     {
         public string Issuer { get; set; }
         public List<string> Audience { get; set; }

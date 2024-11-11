@@ -12,18 +12,14 @@ using TodoHub.Models.Entities;
 
 namespace TodoHub.Services.Profiles
 {
-  
-    public class MappingProfiles : Profile
+    public class CategoriesProfiles : Profile
     {
-        public MappingProfiles()
+        public CategoriesProfiles()
         {
-            CreateMap<CreateTodoRequestDto, Todo>();
-            CreateMap<Todo, TodoResponseDto>();
-            CreateMap<UpdateTodoRequestDto, Todo>();
-
             CreateMap<CreateCategoryRequest, Category>();
             CreateMap<UpdateCategoryRequest, Category>();
             CreateMap<Category, CategoryResponseDto>();
+
         }
     }
 }

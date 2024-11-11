@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Azure.Core;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -31,76 +32,91 @@ namespace TodoHub.Services.Concretes
         }
 
        
-        public Task<ReturnModel<CategoryResponseDto>> AddAsync(CreateCategoryRequest dto)
+        public async Task<ReturnModel<CategoryResponseDto>> AddAsync(CreateCategoryRequest dto)
         {
-          throw new NotImplementedException();
+            await _businessRules.IsNameUnique(dto.Name);
+
+            Category createdCategory = _mapper.Map<Category>(dto);
+            await _categoryRepository.AddAsync(createdCategory);
+            CategoryResponseDto response = _mapper.Map<CategoryResponseDto>(createdCategory);
+
+            return new ReturnModel<CategoryResponseDto>()
+            {
+                Success = true,
+                Message = "Kategori eklendi",
+                Data = response,
+                StatusCode = 200
+            };
         }
 
 
-        public ReturnModel<string> Delete(int id)
+        public async Task<ReturnModel<CategoryResponseDto>> DeleteAsync(int id)
         {
-            _businessRules.CategoryIsPresent(id);
+            await _businessRules.IsCategoryExistAsync(id);
 
-            Category category = _categoryRepository.GetById(id);
-            _categoryRepository.Delete(category);
+            Category category = await _categoryRepository.GetByIdAsync(id);
+            Category deletedCategory = await _categoryRepository.RemoveAsync(category);
+            CategoryResponseDto response = _mapper.Map<CategoryResponseDto>(deletedCategory);
 
-            return new ReturnModel<string>
+
+            return new ReturnModel<CategoryResponseDto>()
             {
-                Data = $"Kategori Başlığı : {category.Name}",
+                Data = response,
                 Message = "Kategori başarıyla silindi.",
-                StatusCode = 204,
-                Success = true
-            };
-        }
-
-        public ReturnModel<List<CategoryResponseDto>> GetAll()
-        {
-            var categories = _categoryRepository.GetAll();
-            List<CategoryResponseDto> responses = _mapper.Map<List<CategoryResponseDto>>(categories);
-
-            return new ReturnModel<List<CategoryResponseDto>>
-            {
-                Data = responses,
-                Message = "Tüm kategoriler listelendi.",
                 StatusCode = 200,
                 Success = true
             };
         }
 
-        public ReturnModel<CategoryResponseDto> GetById(int id)
+        public async Task<ReturnModel<List<CategoryResponseDto>>> GetAllAsync()
+        {
+            List<Category> categories = await _categoryRepository.GetAllAsync();
+            List<CategoryResponseDto> responseList = _mapper.Map<List<CategoryResponseDto>>(categories);
+
+            return new ReturnModel<List<CategoryResponseDto>>()
+            {
+                Success = true,
+                Message = "Kategori listesi başarılı bir şekilde getirildi.",
+                Data = responseList,
+                StatusCode = 200
+            };
+        }
+
+        public async Task<ReturnModel<CategoryResponseDto?>> GetByIdAsync(int id)
         {
             _businessRules.CategoryIsPresent(id);
 
-            Category category = _categoryRepository.GetById(id);
-            CategoryResponseDto response = _mapper.Map<CategoryResponseDto>(category);
+            Category? category = await _categoryRepository.GetByIdAsync(id);
+            CategoryResponseDto? response = _mapper.Map<CategoryResponseDto>(category);
 
-            return new ReturnModel<CategoryResponseDto>
+            return new ReturnModel<CategoryResponseDto?>()
             {
+                Success = true,
+                Message = $"{id} numaralı kategori başarılı bir şekilde getirildi.",
                 Data = response,
-                Message = "Kategori getirildi.",
-                StatusCode = 200,
-                Success = true
+                StatusCode = 200
             };
         }
 
-        public ReturnModel<CategoryResponseDto> Update(UpdateCategoryRequest dto)
+        public async Task<ReturnModel<CategoryResponseDto>> UpdateAsync(UpdateCategoryRequest request)
         {
-            _businessRules.CategoryIsPresent(dto.Id);
 
-            Category category = _categoryRepository.GetById(dto.Id);
-            category.Name = dto.Name;
-           
+            await _businessRules.IsCategoryExistAsync(request.Id);
 
-            _categoryRepository.Update(category);
+            Category existingCategory = await _categoryRepository.GetByIdAsync(request.Id);
 
-            CategoryResponseDto response = _mapper.Map<CategoryResponseDto>(category);
+            existingCategory.Id = existingCategory.Id;
+            existingCategory.Name = request.Name;
 
-            return new ReturnModel<CategoryResponseDto>
+            Category updatedCategory = await _categoryRepository.UpdateAsync(existingCategory);
+            CategoryResponseDto dto = _mapper.Map<CategoryResponseDto>(updatedCategory);
+
+            return new ReturnModel<CategoryResponseDto>()
             {
-                Data = response,
-                Message = "Kategori başarıyla güncellendi.",
-                StatusCode = 200,
-                Success = true
+                Success = true,
+                Message = "Kategori güncellendi.",
+                Data = dto,
+                StatusCode = 200
             };
         }
     }

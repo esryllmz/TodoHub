@@ -11,12 +11,10 @@ namespace TodoHub.Services.Abstracts;
 
 public interface ITodoService
 {
-    Task<ReturnModel<TodoResponseDto>> Add(CreateTodoRequestDto dto, string userId);
-    ReturnModel<List<TodoResponseDto>> GetAll();
-    ReturnModel<TodoResponseDto> GetById(Guid id);
-    ReturnModel<TodoResponseDto> Update(UpdateTodoRequestDto dto);
-    ReturnModel<string> Delete(Guid id);
-    ReturnModel<List<TodoResponseDto>> GetAllByCategoryId(int id);
-    ReturnModel<List<TodoResponseDto>> GetAllByUserId(string userId);
-    ReturnModel<List<TodoResponseDto>> GetAllByTitleContains(string text);
+    Task<ReturnModel<List<TodoResponseDto>>> GetAllAsync();
+    Task<ReturnModel<TodoResponseDto?>> GetByIdAsync(Guid id);
+    Task<ReturnModel<NoData>> AddAsync(CreateTodoRequestDto request);
+    Task<ReturnModel<TodoResponseDto>> UpdateAsync(UpdateTodoRequestDto request);
+    Task<ReturnModel<TodoResponseDto>> RemoveAsync(Guid id);
+    Task<ReturnModel<IQueryable<TodoResponseDto>>> GetTodosByUserAsync();
 }

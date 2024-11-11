@@ -17,28 +17,23 @@ namespace TodoHub.DataAccess.Configurations
 
             public void Configure(EntityTypeBuilder<Todo> builder)
             {
-                builder.HasKey(t => t.Id);
+                builder.ToTable("Todos").HasKey(t => t.Id);
+                builder.Property(t => t.Id).HasColumnName("TodoId");
+                builder.Property(t => t.CreatedTime).HasColumnName("CreatedTime");
+                builder.Property(t => t.UpdatedTime).HasColumnName("UpdatedTime");
+                builder.Property(t => t.Title).HasColumnName("Title");
+                builder.Property(t => t.Description).HasColumnName("Description");
+                builder.Property(t => t.StartDate).HasColumnName("StartDate");
+                builder.Property(t => t.EndDate).HasColumnName("EndDate");
+                builder.Property(t => t.Priority).HasColumnName("Priority");
+                builder.Property(t => t.CategoryId).HasColumnName("Category_Id");
+                builder.Property(t => t.UserId).HasColumnName("User_Id");
 
-                builder.Property(t => t.Title)
-                    .IsRequired()
-                    .HasMaxLength(100);
-
-                builder.Property(t => t.Description)
-                    .HasMaxLength(500);
-
-                builder.Property(t => t.CreatedTime)
-                    .HasDefaultValueSql("GETDATE()");
-
-                builder.Property(t => t.Priority)
-                    .HasConversion<int>(); // Priority enum'u int olarak saklanır
-
-                builder.HasOne(t => t.Category) // Category ile ilişki
-                    .WithMany(c => c.ToDos)
-                    .HasForeignKey(t => t.CategoryId)
-                    .OnDelete(DeleteBehavior.Cascade); // Category silinirse ilgili Todo'lar da silinir
-
-                builder.Property(t => t.Completed)
-                    .HasDefaultValue(false);
+                builder
+                  .HasOne(t => t.Category)
+                  .WithMany(c => c.Todos)
+                  .HasForeignKey(t => t.CategoryId)
+                  .OnDelete(DeleteBehavior.NoAction);
             }
         }
     }

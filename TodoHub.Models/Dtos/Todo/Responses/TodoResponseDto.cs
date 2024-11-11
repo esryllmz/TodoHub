@@ -16,7 +16,7 @@ namespace TodoHub.Models.Dtos.Todo.Responses
         public DateTime EndDate { get; set; }
         public Priority Priority { get; set; }
         public bool Completed { get; set; }
-        public string CategoryName { get; set; } 
+        public string Category { get; set; } 
         public string UserName { get; set; } 
     }
    

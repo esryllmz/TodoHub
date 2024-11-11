@@ -10,4 +10,6 @@ namespace TodoHub.DataAccess.Abstracts;
 
 public interface ITodoRepository:IRepository<Todo, Guid>
 {
+    Task<int> GetToDosCountByUserAsync(string userId);
+    IQueryable<Todo> GetByUserId(string userId);
 }

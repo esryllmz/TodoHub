@@ -15,6 +15,7 @@ namespace TodoHub.Models.Dtos.Todo.Requests
         DateTime EndDate,
         Priority Priority,
         int CategoryId,
-        bool Completed);
+        bool Completed,
+        string UserId);
     
 }

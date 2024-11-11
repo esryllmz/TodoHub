@@ -1,7 +1,6 @@
-﻿using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using TodoHub.Models.Dtos.UserResponses;
+using TodoHub.Services.Abstracts;
 
 namespace TodoHub.API.Controllers
 {
@@ -9,18 +8,17 @@ namespace TodoHub.API.Controllers
     [ApiController]
     public class AuthenticationController(IAuthenticationService _authenticationService) : ControllerBase
     {
-
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginRequestDto dto)
+        public async Task<IActionResult> LoginAsync([FromBody] LoginRequestDto request)
         {
-            var result = await _authenticationService.LoginAsync(dto);
+            var result = await _authenticationService.LoginAsync(request);
             return Ok(result);
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterRequestDto dto)
+        public async Task<IActionResult> RegisterAsync([FromBody] RegisterRequestDto request)
         {
-            var result = await _authenticationService.RegisterAsync(dto);
+            var result = await _authenticationService.RegisterAsync(request);
             return Ok(result);
         }
     }

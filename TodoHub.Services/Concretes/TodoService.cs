@@ -1,10 +1,12 @@
 ﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TodoHub.Core.Responses;
+using TodoHub.Core.Tokens.Services;
 using TodoHub.DataAccess.Abstracts;
 using TodoHub.Models.Dtos.Todo.Requests;
 using TodoHub.Models.Dtos.Todo.Responses;
@@ -19,149 +21,124 @@ namespace TodoHub.Services.Concretes
         private readonly ITodoRepository _todoRepository;
         private readonly IMapper _mapper;
         private readonly TodoBusinessRules _businessRules;
+        private readonly DecoderService _decoderService;
 
-        public TodoService(ITodoRepository todoRepository, IMapper mapper, TodoBusinessRules businessRules)
+        public TodoService(ITodoRepository todoRepository, IMapper mapper, TodoBusinessRules businessRules, DecoderService decoderService )
         {
             _todoRepository = todoRepository;
             _mapper = mapper;
             _businessRules = businessRules;
+            _decoderService = decoderService;
         }
 
-        public async Task<ReturnModel<TodoResponseDto>> Add(CreateTodoRequestDto dto, string userId)
+        public async Task<ReturnModel<NoData>> AddAsync(CreateTodoRequestDto request)
         {
-            Todo createdTodo = _mapper.Map<Todo>(dto);
-            createdTodo.Id = Guid.NewGuid();
-            createdTodo.UserId = userId; 
+            _businessRules.ValidateDates(request.StartDate, request.EndDate);
+            await _businessRules.CheckMaxTodosPerUserAsync(request.UserId);
 
-            Todo todo = _todoRepository.Add(createdTodo);
+            Todo createdTodo = _mapper.Map<Todo>(request);
+            await _todoRepository.AddAsync(createdTodo);
+            TodoResponseDto response = _mapper.Map<TodoResponseDto>(createdTodo);
 
-            TodoResponseDto response = _mapper.Map<TodoResponseDto>(todo);
-
-            return new ReturnModel<TodoResponseDto>
+            return new ReturnModel<NoData>()
             {
+                Success = true,
+                Message = "Yapılacak iş eklendi.",
+                StatusCode = 200
+            };
+        }
+
+        public async Task<ReturnModel<List<TodoResponseDto>>> GetAllAsync()
+        {
+            List<Todo> todos = await _todoRepository.GetAllAsync();
+            List<TodoResponseDto> responseList = _mapper.Map<List<TodoResponseDto>>(todos);
+
+            return new ReturnModel<List<TodoResponseDto>>()
+            {
+                Success = true,
+                Message = "Yapılacak işler listesi başarılı bir şekilde getirildi.",
+                Data = responseList,
+                StatusCode = 200
+            };
+        }
+
+        public async Task<ReturnModel<TodoResponseDto?>> GetByIdAsync(Guid id)
+        {
+            await _businessRules.IsTodoExistAsync(id);
+
+            Todo? todo = await _todoRepository.GetByIdAsync(id);
+            TodoResponseDto? response = _mapper.Map<TodoResponseDto>(todo);
+
+            return new ReturnModel<TodoResponseDto?>()
+            {
+                Success = true,
+                Message = $"{id} numaralı yapılacak iş başarılı bir şekilde getirildi.",
                 Data = response,
-                Message = "Todo eklendi.",
-                StatusCode = 200,
-                Success = true
+                StatusCode = 200
             };
         }
 
-        public ReturnModel<string> Delete(Guid id)
+        public async Task<ReturnModel<IQueryable<TodoResponseDto>>> GetTodosByUserAsync()
         {
-            _businessRules.TodoIsPresent(id);
+            string userId = _decoderService.GetUserId();
+            var query = _todoRepository.GetByUserId(userId);
+            var todos = await query.ToListAsync();
+            var responseList = _mapper.Map<IQueryable<TodoResponseDto>>(todos);
 
-            Todo? todo = _todoRepository.GetById(id);
-            Todo deletedTodo = _todoRepository.Delete(todo);
-
-            return new ReturnModel<string>
+            return new ReturnModel<IQueryable<TodoResponseDto>>()
             {
-                Data = $"Todo Başlığı : {deletedTodo.Title}",
-                Message = "Todo başarıyla silindi.",
-                StatusCode = 204,
-                Success = true
+                Success = true,
+                Message = "Kullanıcıya özel ToDo listesi başarılı bir şekilde getirildi.",
+                Data = responseList,
+                StatusCode = 200
             };
         }
 
-        public ReturnModel<List<TodoResponseDto>> GetAll()
+       
+
+        public async Task<ReturnModel<TodoResponseDto>> RemoveAsync(Guid id)
         {
-            var todos = _todoRepository.GetAll();
-            List<TodoResponseDto> responses = _mapper.Map<List<TodoResponseDto>>(todos);
-            return new ReturnModel<List<TodoResponseDto>>
+            await _businessRules.IsTodoExistAsync(id);
+
+            Todo todo = await _todoRepository.GetByIdAsync(id);
+            Todo deletedTodo = await _todoRepository.RemoveAsync(todo);
+            TodoResponseDto response = _mapper.Map<TodoResponseDto>(deletedTodo);
+
+            return new ReturnModel<TodoResponseDto>()
             {
-                Data = responses,
-                Message = string.Empty,
-                StatusCode = 200,
-                Success = true
-            };
-        }
-
-        public ReturnModel<List<TodoResponseDto>> GetAllByUserId(string userId)
-        {
-            List<Todo> todos = _todoRepository.GetAll(t => t.UserId == userId);
-            List<TodoResponseDto> responses = _mapper.Map<List<TodoResponseDto>>(todos);
-
-            return new ReturnModel<List<TodoResponseDto>>
-            {
-                Data = responses,
-                Message = $"Kullanıcıya göre Todo'lar listelendi : Kullanıcı ID: {userId}",
-                StatusCode = 200,
-                Success = true
-            };
-        }
-
-        public ReturnModel<List<TodoResponseDto>> GetAllByCategoryId(int categoryId)
-        {
-            List<Todo> todos = _todoRepository.GetAll(t => t.CategoryId == categoryId);
-            List<TodoResponseDto> responses = _mapper.Map<List<TodoResponseDto>>(todos);
-            return new ReturnModel<List<TodoResponseDto>>
-            {
-                Data = responses,
-                Message = $"Kategori ID'sine göre Todo'lar listelendi : Kategori ID: {categoryId}",
-                StatusCode = 200,
-                Success = true
-            };
-        }
-
-        public ReturnModel<List<TodoResponseDto>> GetAllByTitleContains(string text)
-        {
-            var todos = _todoRepository.GetAll(t => t.Title.Contains(text));
-            var responses = _mapper.Map<List<TodoResponseDto>>(todos);
-            return new ReturnModel<List<TodoResponseDto>>
-            {
-                Data = responses,
-                Message = string.Empty,
-                StatusCode = 200,
-                Success = true
-            };
-        }
-
-        public ReturnModel<TodoResponseDto> GetById(Guid id)
-        {
-            try
-            {
-                _businessRules.TodoIsPresent(id);
-
-                var todo = _todoRepository.GetById(id);
-                var response = _mapper.Map<TodoResponseDto>(todo);
-                return new ReturnModel<TodoResponseDto>
-                {
-                    Data = response,
-                    Message = "İlgili todo gösterildi",
-                    StatusCode = 200,
-                    Success = true
-                };
-            }
-            catch (Exception ex)
-            {
-                return GlobalExceptionHandler<TodoResponseDto>.HandleException(ex);
-            }
-        }
-
-        public ReturnModel<TodoResponseDto> Update(UpdateTodoRequestDto dto)
-        {
-            _businessRules.TodoIsPresent(dto.Id);
-
-            Todo todo = _todoRepository.GetById(dto.Id);
-
-            todo.Title = dto.Title;
-            todo.Description = dto.Description;
-            todo.StartDate = dto.StartDate;
-            todo.EndDate = dto.EndDate;
-            todo.Priority = dto.Priority;
-            todo.Completed = dto.Completed;
-
-            _todoRepository.Update(todo);
-
-            TodoResponseDto response = _mapper.Map<TodoResponseDto>(todo);
-
-            return new ReturnModel<TodoResponseDto>
-            {
+                Success = true,
+                Message = "Yapılacak iş başarılı bir şekilde silindi",
                 Data = response,
-                Message = "Todo güncellendi.",
-                StatusCode = 200,
-                Success = true
+                StatusCode = 200
+            };
+        }
+
+        public async Task<ReturnModel<TodoResponseDto>> UpdateAsync(UpdateTodoRequestDto request)
+        {
+            await _businessRules.IsTodoExistAsync(request.Id);
+
+            Todo existingTodo = await _todoRepository.GetByIdAsync(request.Id);
+
+            existingTodo.Id = existingTodo.Id;
+            existingTodo.Title = request.Title;
+            existingTodo.Description = request.Description;
+            existingTodo.StartDate = request.StartDate;
+            existingTodo.EndDate = request.EndDate;
+            existingTodo.Priority = request.Priority;
+            existingTodo.Completed = request.Completed;
+            existingTodo.UserId = request.UserId;
+
+            Todo updatedTodo = await _todoRepository.UpdateAsync(existingTodo);
+            TodoResponseDto dto = _mapper.Map<TodoResponseDto>(updatedTodo);
+
+            return new ReturnModel<TodoResponseDto>()
+            {
+                Success = true,
+                Message = "Yapılacak iş güncellendi.",
+                Data = dto,
+                StatusCode = 200
             };
         }
     }
-
 }
+

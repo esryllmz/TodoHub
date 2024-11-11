@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Azure.Core;
+using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,30 +9,28 @@ using TodoHub.Core.Exceptions;
 using TodoHub.Models.Dtos.UserResponses;
 using TodoHub.Models.Entities;
 using TodoHub.Services.Abstracts;
+using TodoHub.Services.Rules;
 
 namespace TodoHub.Services.Concretes
 {
     public class UserService : IUserService
     {
         private readonly UserManager<User> _userManager;
-
-        public UserService(UserManager<User> userManager)
+        private readonly UserBusinessRules _userBusinessRules;
+        public UserService(UserManager<User> userManager, UserBusinessRules userBusinessRules)
         {
             _userManager = userManager;
+            _userBusinessRules = userBusinessRules;
         }
 
         public async Task<string> ChangePasswordAsync(string id, ChangePasswordRequestDto dto)
         {
-            var user = await _userManager.FindByIdAsync(id);
-            UserIsPresent(user);
-
+            var user = await _userBusinessRules.EnsureUserExistsAsync(id);
+            _userBusinessRules.EnsurePasswordsMatch(dto.NewPassword, dto.NewPassword);
             var result = await _userManager.ChangePasswordAsync(user, dto.OldPassword, dto.NewPassword);
+            CheckForIdentityResult(result);
 
-            if (result.Succeeded is false)
-            {
-                throw new BusinessException(result.Errors.First().Description);
-            }
-
+            
             return "Şifre Değiştirildi.";
         }
 
@@ -93,18 +92,13 @@ namespace TodoHub.Services.Concretes
 
         public async Task<User> UpdateAsync(string id, UpdateRequestDto dto)
         {
-            var user = await _userManager.FindByIdAsync(id);
-            UserIsPresent(user);
+            var user = await _userBusinessRules.EnsureUserExistsAsync(id);
 
             user.UserName = dto.Username;
-         
-
+          
+          
             var result = await _userManager.UpdateAsync(user);
-
-            if (result.Succeeded is false)
-            {
-                throw new BusinessException(result.Errors.First().Description);
-            }
+            CheckForIdentityResult(result);
 
             return user;
 
@@ -115,6 +109,13 @@ namespace TodoHub.Services.Concretes
             if (user is null)
             {
                 throw new NotFoundException("Kullanıcı bulunamadı.");
+            }
+        }
+        private void CheckForIdentityResult(IdentityResult result)
+        {
+            if (!result.Succeeded)
+            {
+                throw new BusinessException(result.Errors.ToList().First().Description);
             }
         }
     }

@@ -17,39 +17,38 @@ namespace TodoHub.Services.Concretes
 {
     public class JwtService : IJwtService
     {
-        private readonly CustomTokenOptions _tokenOptions;
+        private readonly TokenOption _tokenOption;
         private readonly UserManager<User> _userManager;
-
-        public JwtService(IOptions<CustomTokenOptions> options, UserManager<User> userManager)
+        public JwtService(IOptions<TokenOption> tokenOption, UserManager<User> userManager)
         {
-            _tokenOptions = options.Value;
+            _tokenOption = tokenOption.Value;
             _userManager = userManager;
         }
 
         public async Task<TokenResponseDto> CreateToken(User user)
         {
-            var accessTokenExpiration = DateTime.Now.AddMinutes(_tokenOptions.AccessTokenExpiration);
-            var securityKey = SecurityKeyHelper.GetSecurityKey(_tokenOptions.SecurityKey);
+            var accessTokenExpiration = DateTime.Now.AddMinutes(_tokenOption.AccessTokenExpiration);
+            var secretKey = SecurityKeyHelper.GetSecurityKey(_tokenOption.SecurityKey);
 
-            SigningCredentials signingCredentials = new(securityKey, SecurityAlgorithms.HmacSha512Signature);
+            SigningCredentials sc = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha512Signature);
 
             JwtSecurityToken jwtSecurityToken = new JwtSecurityToken(
-                issuer: _tokenOptions.Issuer,
+                issuer: _tokenOption.Issuer,
+                claims: await GetClaims(user, _tokenOption.Audience),
                 expires: accessTokenExpiration,
-                claims: await GetClaims(user, _tokenOptions.Audience),
-                signingCredentials: signingCredentials
-                );
+                signingCredentials: sc
+              );
 
-            var jwtHandler = new JwtSecurityTokenHandler();
+            var handler = new JwtSecurityTokenHandler();
+            string token = handler.WriteToken(jwtSecurityToken);
 
-            string token = jwtHandler.WriteToken(jwtSecurityToken);
-
-            return new TokenResponseDto
+            return new TokenResponseDto()
             {
                 AccessToken = token,
                 AccessTokenExpiration = accessTokenExpiration
             };
         }
+
 
         private async Task<IEnumerable<Claim>> GetClaims(User user, List<string> audiences)
         {

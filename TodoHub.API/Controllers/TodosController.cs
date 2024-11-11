@@ -1,51 +1,59 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using TodoHub.Models.Dtos.Todo.Requests;
 using TodoHub.Services.Abstracts;
+using TodoHub.Services.Concretes;
 
 namespace TodoHub.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class TodoController(ITodoService _todoService) : ControllerBase
+    public class TodosController(ITodoService _todoService) : ControllerBase
     {
         [HttpGet("getall")]
-        public IActionResult GetAll()
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetAllAsync()
         {
-            var result = _todoService.GetAll();
+            var result = await _todoService.GetAllAsync();
             return Ok(result);
         }
 
         [HttpPost("add")]
-        public async Task<IActionResult> Add([FromBody] CreateTodoRequestDto dto)
+        public async Task<IActionResult> AddAsync([FromBody] CreateTodoRequestDto request)
         {
-            var userId = HttpContext.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier)?.Value;
-            var result = await _todoService.Add(dto, userId);
+            var result = await _todoService.AddAsync(request);
             return Ok(result);
         }
 
         [HttpGet("getbyid/{id}")]
-        public IActionResult GetById([FromRoute] Guid id)
+        public async Task<IActionResult> GetByIdAsync([FromQuery] Guid id)
         {
-            var result = _todoService.GetById(id);
+            var result = await _todoService.GetByIdAsync(id);
             return Ok(result);
         }
 
         [HttpDelete("delete")]
-        public IActionResult Delete([FromQuery] Guid id)
+        public async Task<IActionResult> DeleteAsync([FromQuery] Guid id)
         {
-            var result = _todoService.Delete(id);
+            var result = await _todoService.RemoveAsync(id);
             return Ok(result);
         }
 
         [HttpPut("update")]
-        public IActionResult Update([FromBody] UpdateTodoRequestDto dto)
+        public async Task<IActionResult> UpdateAsync([FromBody] UpdateTodoRequestDto request)
         {
-            var result = _todoService.Update(dto);
+            var result = await _todoService.UpdateAsync(request);
             return Ok(result);
         }
 
-      
+        [HttpGet("getuserstodos")]
+        [Authorize]
+        public async Task<IActionResult> GetTodosByUserAsync()
+        {
+            var result = await _todoService.GetTodosByUserAsync();
+            return Ok(result);
+        }
     }
 }

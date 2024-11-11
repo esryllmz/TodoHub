@@ -10,24 +10,31 @@ using TodoHub.Services.Constants;
 
 namespace TodoHub.Services.Rules
 {
-    public class CategoryBusinessRules
+    public class CategoryBusinessRules(ICategoryRepository _categoryRepository)
     {
-        private readonly ICategoryRepository _categoryRepository;
-
-        public CategoryBusinessRules(ICategoryRepository categoryRepository)
+        public async Task IsCategoryExistAsync(int id)
         {
-            _categoryRepository = categoryRepository;
+            var category = await _categoryRepository.GetByIdAsync(id);
+
+            if (category == null)
+            {
+                throw new NotFoundException($"{id} numaralı kategori bulunamadı.");
+            }
         }
 
-        public virtual bool CategoryIsPresent(int id)
+        public async Task IsNameUnique(string name)
         {
-            var category = _categoryRepository.GetById(id);
-            if (category is null)
-            {
-                throw new NotFoundException(Messages.CategoryIsNotPresentMessage(id));
-            }
+            var category = await _categoryRepository.GetByNameAsync(name);
 
-            return true;
+            if (category != null)
+            {
+                throw new BusinessException("Bu isim ile sistemimizde zaten bir kategori mevcut.");
+            }
+        }
+
+        internal void CategoryIsPresent(int id)
+        {
+            throw new NotImplementedException();
         }
     }
 

@@ -14,51 +14,43 @@ public abstract class EfRepositoryBase<TContext, TEntity, TId> : IRepository<TEn
     where TContext : DbContext
 
 {
-    protected TContext Context { get; }
+    protected TContext _context { get; }
     public EfRepositoryBase(TContext context)
     {
-        Context = context;
+        _context = context;
     }
 
-    public TEntity Add(TEntity entity)
+    public async Task<TEntity> AddAsync(TEntity entity)
     {
         entity.CreatedTime = DateTime.Now;
-        Context.Set<TEntity>().Add(entity);
-        Context.SaveChanges();
-
+        await _context.Set<TEntity>().AddAsync(entity);
+        await _context.SaveChangesAsync();
         return entity;
     }
 
-    public TEntity Delete(TEntity entity)
+    public async Task<List<TEntity>> GetAllAsync()
     {
-        Context.Set<TEntity>().Remove(entity);
-        Context.SaveChanges();
+        return await _context.Set<TEntity>().ToListAsync();
+    }
 
+    public async Task<TEntity?> GetByIdAsync(TId id)
+    {
+        return await _context.Set<TEntity>().FindAsync(id);
+    }
+
+    public async Task<TEntity?> RemoveAsync(TEntity entity)
+    {
+        _context.Set<TEntity>().Remove(entity);
+        await _context.SaveChangesAsync();
         return entity;
     }
 
-    public List<TEntity> GetAll(Expression<Func<TEntity, bool>>? filter = null)
-    {
-        IQueryable<TEntity> query = Context.Set<TEntity>();
-        if (filter is not null)
-        {
-            query = query.Where(filter);
-        }
-
-        return query.ToList();
-    }
-
-    public TEntity? GetById(TId id)
-    {
-        return Context.Set<TEntity>().Find(id);
-    }
-
-    public TEntity Update(TEntity entity)
+    public async Task<TEntity?> UpdateAsync(TEntity entity)
     {
         entity.UpdatedTime = DateTime.Now;
-        Context.Set<TEntity>().Update(entity);
-        Context.SaveChanges();
-
+        _context.Set<TEntity>().Update(entity);
+        await _context.SaveChangesAsync();
         return entity;
     }
+
 }

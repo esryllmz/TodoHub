@@ -13,10 +13,10 @@ namespace TodoHub.Services.Abstracts;
     public interface ICategoryService
     {
         Task<ReturnModel<CategoryResponseDto>> AddAsync(CreateCategoryRequest dto);
-        ReturnModel<List<CategoryResponseDto>> GetAll();
-        ReturnModel<CategoryResponseDto> GetById(int id);
-        ReturnModel<CategoryResponseDto> Update(UpdateCategoryRequest dto);
-        ReturnModel<string> Delete(int id);
+        Task<ReturnModel<List<CategoryResponseDto>>> GetAllAsync();
+        Task<ReturnModel<CategoryResponseDto?>> GetByIdAsync(int id);
+        Task<ReturnModel<CategoryResponseDto>> UpdateAsync(UpdateCategoryRequest request);
+        Task<ReturnModel<CategoryResponseDto>> DeleteAsync(int id);
    
     }
 
